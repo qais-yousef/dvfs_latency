@@ -41,6 +41,9 @@ static int setup_perf_event(void)
 	}
 
 	dvfs_info("Starting @CPU%d\n", cpu);
+	dvfs_info("runtime: %lldus\n", runtime);
+	dvfs_info("period: %lldus\n", period);
+	dvfs_info("duration: %lldus\n", duration);
 
 	perf_event_enable(cycle_counter);
 
