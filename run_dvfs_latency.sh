@@ -1,5 +1,4 @@
 #!/bin/sh
-set -x
 
 MODULE=dvfs_latency.ko
 
@@ -73,6 +72,7 @@ cd -
 #
 for v in 100 500 1000 10000
 do
+	echo "Testing $v us..."
 	echo $v > $SYSFS_RUNTIME
 
 	#
@@ -87,6 +87,8 @@ do
 	echo schedutil > $POLICY/scaling_governor
 	echo 1 > $SYSFS_START
 done
+
+echo "Done!"
 
 #
 # Cleanup
