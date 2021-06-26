@@ -69,6 +69,14 @@ echo "cpuset exclusive: $(cat tg/cpuset.cpu_exclusive)"
 cd -
 
 #
+# Remember schedutil rate limit then reset it
+#
+SCHEDUTIL_RLIMIT=$(cat $POLICY/schedutil/rate_limit_us)
+echo "Original schedutil rate limit: $(cat $POLICY/schedutil/rate_limit_us) us"
+echo 0 > $POLICY/schedutil/rate_limit_us
+echo "New schedutil rate limit: $(cat $POLICY/schedutil/rate_limit_us) us"
+
+#
 # Measure latency for 100, 500, 1000 and 10000 us
 #
 for v in 100 200 300 400 500 1000 2000 3000 4000 5000 10000 20000
@@ -100,6 +108,8 @@ echo "Done!"
 #
 # Cleanup
 #
+echo $SCHEDUTIL_RLIMIT > $POLICY/schedutil/rate_limit_us
+echo "Restored schedutil rate limit: $(cat $POLICY/schedutil/rate_limit_us) us"
 if [ $REMOVE -eq 1 ]; then
 	rmmod $MODULE
 fi
