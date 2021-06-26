@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
+#include <linux/kobject.h>
 #include <linux/kthread.h>
 #include <linux/module.h>
 #include <linux/perf_event.h>
@@ -17,9 +18,10 @@ static struct perf_event_attr cycle_counter_attr = {
 static struct perf_event *cycle_counter;
 
 static int cpu;
-module_param(cpu, int, 0644);
+static int start;
 
 static struct task_struct *thread;
+static struct kobject *dvfs_latency_kobj;
 
 
 static int setup_perf_event(void)
@@ -62,10 +64,12 @@ static int dvfs_latency_test_thread(void *data)
 
 	cleanup_perf_event();
 
+	start = 0;
+
 	return 0;
 }
 
-static int dvfs_latency_test_init(void)
+static int dvfs_latency_start(void)
 {
 	thread = kthread_create_on_node(dvfs_latency_test_thread,
 					NULL, cpu_to_node(cpu),
@@ -85,8 +89,64 @@ static int dvfs_latency_test_init(void)
 	return 0;
 }
 
+static ssize_t cpu_show(struct kobject *kobj, struct kobj_attribute *attr,
+			char *buf)
+{
+	return sprintf(buf, "%d\n", cpu);
+}
+static ssize_t cpu_store(struct kobject *kobj, struct kobj_attribute *attr,
+			 const char *buf, size_t count)
+{
+	int ret;
+
+	ret = kstrtoint(buf, 10, &cpu);
+	if (ret)
+		return ret;
+
+	return count;
+}
+static struct kobj_attribute cpu_attribute = __ATTR_RW(cpu);
+
+static ssize_t start_show(struct kobject *kobj, struct kobj_attribute *attr,
+			  char *buf)
+{
+	return sprintf(buf, "%d\n", start);
+}
+static ssize_t start_store(struct kobject *kobj, struct kobj_attribute *attr,
+			   const char *buf, size_t count)
+{
+	if (start)
+		return -EBUSY;
+
+	start = 1;
+	dvfs_latency_start();
+
+	return count;
+}
+static struct kobj_attribute start_attribute = __ATTR_RW(start);
+
+static int dvfs_latency_test_init(void)
+{
+	int ret;
+
+	dvfs_latency_kobj = kobject_create_and_add("dvfs_latency", kernel_kobj);
+	if (!dvfs_latency_kobj)
+		return -ENOMEM;
+
+	ret = sysfs_create_file(dvfs_latency_kobj, &cpu_attribute.attr);
+	if (ret)
+		return ret;
+
+	ret = sysfs_create_file(dvfs_latency_kobj, &start_attribute.attr);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
 static void dvfs_latency_test_finish(void)
 {
+	kobject_put(dvfs_latency_kobj);
 }
 
 
