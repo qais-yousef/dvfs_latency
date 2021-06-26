@@ -24,6 +24,7 @@ static s64 period = 20 * USEC_PER_MSEC;
 static s64 runtime = 500;
 static s64 duration = 1 * USEC_PER_SEC;
 static u64 cycles;
+static u64 counter;
 
 static struct task_struct *thread;
 static struct kobject *dvfs_latency_kobj;
@@ -72,8 +73,11 @@ static int dvfs_latency_thread(void *data)
 	if (ret)
 		return ret;
 
+	counter = 0;
 	begin = t1 = ktime_get();
 	while (true) {
+		counter++;
+
 		t2 = ktime_get();
 
 		delta = ktime_us_delta(t2, begin);
@@ -185,6 +189,16 @@ static ssize_t cycles_show(struct kobject *kobj, struct kobj_attribute *attr,
 }
 static struct kobj_attribute cycles_attribute = __ATTR_RO(cycles);
 
+static ssize_t counter_show(struct kobject *kobj, struct kobj_attribute *attr,
+			    char *buf)
+{
+	while (start)
+		msleep(500);
+
+	return sprintf(buf, "%llu\n", counter);
+}
+static struct kobj_attribute counter_attribute = __ATTR_RO(counter);
+
 static int dvfs_latency_init(void)
 {
 	int ret;
@@ -206,6 +220,10 @@ static int dvfs_latency_init(void)
 		return ret;
 
 	ret = sysfs_create_file(dvfs_latency_kobj, &cycles_attribute.attr);
+	if (ret)
+		return ret;
+
+	ret = sysfs_create_file(dvfs_latency_kobj, &counter_attribute.attr);
 	if (ret)
 		return ret;
 

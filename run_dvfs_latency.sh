@@ -11,6 +11,7 @@ SYSFS_CPU=/sys/kernel/dvfs_latency/cpu
 SYSFS_RUNTIME=/sys/kernel/dvfs_latency/runtime
 SYSFS_START=/sys/kernel/dvfs_latency/start
 SYSFS_CYCLES=/sys/kernel/dvfs_latency/cycles
+SYSFS_COUNTER=/sys/kernel/dvfs_latency/counter
 
 
 #
@@ -91,7 +92,7 @@ do
 	sleep 1
 	echo 1 > $SYSFS_START
 
-	echo -e "\tperformance gov: $(cat $SYSFS_CYCLES)"
+	echo -e "\tperformance gov: $(cat $SYSFS_CYCLES)\t$(cat $SYSFS_COUNTER)"
 
 	#
 	# Measure latency with schedutil governor
@@ -100,7 +101,7 @@ do
 	sleep 1
 	echo 1 > $SYSFS_START
 
-	echo -e "\tschedutil gov:   $(cat $SYSFS_CYCLES)"
+	echo -e "\tschedutil gov:   $(cat $SYSFS_CYCLES)\t$(cat $SYSFS_COUNTER)"
 done
 
 echo "Done!"
