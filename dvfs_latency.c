@@ -144,6 +144,30 @@ static ssize_t start_store(struct kobject *kobj, struct kobj_attribute *attr,
 }
 static struct kobj_attribute start_attribute = __ATTR_RW(start);
 
+static ssize_t runtime_show(struct kobject *kobj, struct kobj_attribute *attr,
+			    char *buf)
+{
+	return sprintf(buf, "%lld\n", runtime);
+}
+static ssize_t runtime_store(struct kobject *kobj, struct kobj_attribute *attr,
+			     const char *buf, size_t count)
+{
+	s64 temp;
+	int ret;
+
+	ret = kstrtos64(buf, 10, &temp);
+	if (ret)
+		return ret;
+
+	if (temp > period)
+		return -EINVAL;
+
+	runtime = temp;
+
+	return count;
+}
+static struct kobj_attribute runtime_attribute = __ATTR_RW(runtime);
+
 static int dvfs_latency_init(void)
 {
 	int ret;
@@ -157,6 +181,10 @@ static int dvfs_latency_init(void)
 		return ret;
 
 	ret = sysfs_create_file(dvfs_latency_kobj, &start_attribute.attr);
+	if (ret)
+		return ret;
+
+	ret = sysfs_create_file(dvfs_latency_kobj, &runtime_attribute.attr);
 	if (ret)
 		return ret;
 
