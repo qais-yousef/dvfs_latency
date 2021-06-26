@@ -1,4 +1,4 @@
-obj-m += dvfs-latency-test.o
+obj-m += dvfs_latency.o
 
 EXTRA_CFLAGS = -I$(src)
 

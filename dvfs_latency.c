@@ -54,7 +54,7 @@ static void cleanup_perf_event(void)
 	perf_event_release_kernel(cycle_counter);
 }
 
-static int dvfs_latency_test_thread(void *data)
+static int dvfs_latency_thread(void *data)
 {
 	unsigned long sleeptime = period - runtime;
 	ktime_t begin, t1, t2;
@@ -90,7 +90,7 @@ static int dvfs_latency_test_thread(void *data)
 
 static int dvfs_latency_start(void)
 {
-	thread = kthread_create_on_node(dvfs_latency_test_thread,
+	thread = kthread_create_on_node(dvfs_latency_thread,
 					NULL, cpu_to_node(cpu),
 					"dvfs-latency-test");
 
@@ -144,7 +144,7 @@ static ssize_t start_store(struct kobject *kobj, struct kobj_attribute *attr,
 }
 static struct kobj_attribute start_attribute = __ATTR_RW(start);
 
-static int dvfs_latency_test_init(void)
+static int dvfs_latency_init(void)
 {
 	int ret;
 
@@ -163,13 +163,13 @@ static int dvfs_latency_test_init(void)
 	return 0;
 }
 
-static void dvfs_latency_test_finish(void)
+static void dvfs_latency_finish(void)
 {
 	kobject_put(dvfs_latency_kobj);
 }
 
 
-module_init(dvfs_latency_test_init);
-module_exit(dvfs_latency_test_finish);
+module_init(dvfs_latency_init);
+module_exit(dvfs_latency_finish);
 
 MODULE_LICENSE("GPL");
