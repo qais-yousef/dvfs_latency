@@ -10,6 +10,7 @@ SYSFS_CPUFREQ=/sys/devices/system/cpu/cpufreq/
 SYSFS_CPU=/sys/kernel/dvfs_latency/cpu
 SYSFS_RUNTIME=/sys/kernel/dvfs_latency/runtime
 SYSFS_START=/sys/kernel/dvfs_latency/start
+SYSFS_CYCLES=/sys/kernel/dvfs_latency/cycles
 
 
 #
@@ -81,11 +82,15 @@ do
 	echo performance > $POLICY/scaling_governor
 	echo 1 > $SYSFS_START
 
+	echo "performance gov: $(cat $SYSFS_CYCLES)"
+
 	#
 	# Measure latency with schedutil governor
 	#
 	echo schedutil > $POLICY/scaling_governor
 	echo 1 > $SYSFS_START
+
+	echo "schedutil gov: $(cat $SYSFS_CYCLES)"
 done
 
 echo "Done!"

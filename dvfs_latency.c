@@ -23,6 +23,7 @@ static int start;
 static s64 period = 20 * USEC_PER_MSEC;
 static s64 runtime = 500;
 static s64 duration = 1 * USEC_PER_SEC;
+static u64 cycles;
 
 static struct task_struct *thread;
 static struct kobject *dvfs_latency_kobj;
@@ -52,10 +53,10 @@ static int setup_perf_event(void)
 
 static void cleanup_perf_event(void)
 {
-	u64 count, enabled, running;
-	count = perf_event_read_value(cycle_counter, &enabled, &running);
+	u64 enabled, running;
+	cycles = perf_event_read_value(cycle_counter, &enabled, &running);
 
-	dvfs_info("Stopped. CPU%d cycle counter = %llu\n", cpu, count);
+	dvfs_info("Stopped. CPU%d cycle counter = %llu\n", cpu, cycles);
 	perf_event_disable(cycle_counter);
 	perf_event_release_kernel(cycle_counter);
 }
@@ -174,6 +175,16 @@ static ssize_t runtime_store(struct kobject *kobj, struct kobj_attribute *attr,
 }
 static struct kobj_attribute runtime_attribute = __ATTR_RW(runtime);
 
+static ssize_t cycles_show(struct kobject *kobj, struct kobj_attribute *attr,
+			   char *buf)
+{
+	while (start)
+		msleep(500);
+
+	return sprintf(buf, "%llu\n", cycles);
+}
+static struct kobj_attribute cycles_attribute = __ATTR_RO(cycles);
+
 static int dvfs_latency_init(void)
 {
 	int ret;
@@ -191,6 +202,10 @@ static int dvfs_latency_init(void)
 		return ret;
 
 	ret = sysfs_create_file(dvfs_latency_kobj, &runtime_attribute.attr);
+	if (ret)
+		return ret;
+
+	ret = sysfs_create_file(dvfs_latency_kobj, &cycles_attribute.attr);
 	if (ret)
 		return ret;
 
