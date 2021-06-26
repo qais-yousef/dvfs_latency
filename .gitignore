@@ -8,3 +8,4 @@ modules.order
 .tmp_versions
 *.mod
 .*.mod.cmd
+dvfs_latency_test/
