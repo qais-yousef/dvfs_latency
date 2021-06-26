@@ -27,17 +27,20 @@ static s64 duration = 1 * USEC_PER_SEC;
 static struct task_struct *thread;
 static struct kobject *dvfs_latency_kobj;
 
+#define dvfs_info(args...)	pr_info("dvfs_lateny: " args)
+#define dvfs_err(args...)	pr_err("dvfs_lateny: " args)
+
 
 static int setup_perf_event(void)
 {
 	cycle_counter = perf_event_create_kernel_counter(&cycle_counter_attr,
 							 cpu, NULL, NULL, NULL);
 	if (IS_ERR(cycle_counter)) {
-		pr_err("Failed to allocate perf counter\n");
+		dvfs_err("Failed to allocate perf counter\n");
 		return PTR_ERR(cycle_counter);
 	}
 
-	pr_info("dvfs-latency-test: Starting @CPU%d\n", cpu);
+	dvfs_info("Starting @CPU%d\n", cpu);
 
 	perf_event_enable(cycle_counter);
 
@@ -49,7 +52,7 @@ static void cleanup_perf_event(void)
 	u64 count, enabled, running;
 	count = perf_event_read_value(cycle_counter, &enabled, &running);
 
-	pr_info("dvfs-latency-test: Stopped. CPU%d cycle counter = %llu\n", cpu, count);
+	dvfs_info("Stopped. CPU%d cycle counter = %llu\n", cpu, count);
 	perf_event_disable(cycle_counter);
 	perf_event_release_kernel(cycle_counter);
 }
@@ -92,10 +95,10 @@ static int dvfs_latency_start(void)
 {
 	thread = kthread_create_on_node(dvfs_latency_thread,
 					NULL, cpu_to_node(cpu),
-					"dvfs-latency-test");
+					"dvfs_latency");
 
 	if (IS_ERR(thread)) {
-		pr_err("dvfs-latency-test: Failed to create test thread\n");
+		dvfs_err("Failed to create test thread\n");
 		return PTR_ERR(thread);
 	}
 
