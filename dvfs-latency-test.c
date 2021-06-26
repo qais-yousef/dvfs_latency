@@ -76,6 +76,8 @@ static int dvfs_latency_test_init(void)
 		return PTR_ERR(thread);
 	}
 
+	sched_set_fifo(thread);
+
 	kthread_bind(thread, cpu);
 	kthread_park(thread);
 	kthread_stop(thread);
