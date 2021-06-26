@@ -16,7 +16,7 @@ SYSFS_CYCLES=/sys/kernel/dvfs_latency/cycles
 #
 # Init
 #
-if [ "x" == "x$LOADED" ]; then
+if [ -z "$LOADED" ]; then
 	insmod $MODULE
 	REMOVE=1
 fi
@@ -51,7 +51,7 @@ echo "Testing cpu: $(cat $SYSFS_CPU)"
 CGROUP_DIR=$(mount | grep cpuset)
 CPUSET_DIR=cpuset
 UNMOUNT_CPUSET=0
-if [ "x" == "x$CGROUP_DIR" ]; then
+if [ -z "$CGROUP_DIR" ]; then
 	mkdir $CPUSET_DIR
 	mount -t cgroup -o cpuset none $CPUSET_DIR
 	UNMOUNT_CPUSET=1
@@ -80,17 +80,19 @@ do
 	# Measure latency with performance governor
 	#
 	echo performance > $POLICY/scaling_governor
+	sleep 1
 	echo 1 > $SYSFS_START
 
-	echo "performance gov: $(cat $SYSFS_CYCLES)"
+	echo -e "\tperformance gov: $(cat $SYSFS_CYCLES)"
 
 	#
 	# Measure latency with schedutil governor
 	#
 	echo schedutil > $POLICY/scaling_governor
+	sleep 1
 	echo 1 > $SYSFS_START
 
-	echo "schedutil gov: $(cat $SYSFS_CYCLES)"
+	echo -e "\tschedutil gov:   $(cat $SYSFS_CYCLES)"
 done
 
 echo "Done!"
@@ -103,5 +105,6 @@ if [ $REMOVE -eq 1 ]; then
 fi
 if [ $UNMOUNT_CPUSET -eq 1 ]; then
 	umount $CPUSET_DIR
+	rm -rf $CPUSET_DIR/tg
 	rm -rf $CPUSET_DIR
 fi
