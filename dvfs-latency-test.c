@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
+#include <linux/delay.h>
 #include <linux/kobject.h>
 #include <linux/kthread.h>
 #include <linux/module.h>
@@ -19,6 +20,9 @@ static struct perf_event *cycle_counter;
 
 static int cpu;
 static int start;
+static s64 period = 20 * USEC_PER_MSEC;
+static s64 runtime = 500;
+static s64 duration = 1 * USEC_PER_SEC;
 
 static struct task_struct *thread;
 static struct kobject *dvfs_latency_kobj;
@@ -52,15 +56,30 @@ static void cleanup_perf_event(void)
 
 static int dvfs_latency_test_thread(void *data)
 {
-	int ret, i;
-	static volatile int test;
+	unsigned long sleeptime = period - runtime;
+	ktime_t begin, t1, t2;
+	s64 delta;
+	int ret;
 
 	ret = setup_perf_event();
 	if (ret)
 		return ret;
 
-	for (i = 0; i < 1000000; i++)
-		test = i;
+	begin = t1 = ktime_get();
+	while (true) {
+		t2 = ktime_get();
+
+		delta = ktime_us_delta(t2, begin);
+		if (delta > duration)
+			break;
+
+		delta = ktime_us_delta(t2, t1);
+		if (delta < runtime)
+			continue;
+
+		usleep_range(sleeptime, sleeptime);
+		t1 = ktime_get();
+	}
 
 	cleanup_perf_event();
 
