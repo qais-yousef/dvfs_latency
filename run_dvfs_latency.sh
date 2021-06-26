@@ -1,6 +1,16 @@
 #!/bin/sh
+set -x
 
-loaded=$(lsmod dvfs_latency)
-if [ "x" == "x$loaded" ]; then
-	insmod dvfs_latency.ko
+MODULE=dvfs_latency.ko
+
+LOADED=$(lsmod | grep dvfs_latency)
+REMOVE=0
+
+if [ "x" == "x$LOADED" ]; then
+	insmod $MODULE
+	REMOVE=1
+fi
+
+if [ $REMOVE -eq 1 ]; then
+	rmmod $MODULE
 fi
