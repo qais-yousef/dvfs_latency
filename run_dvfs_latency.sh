@@ -71,7 +71,7 @@ cd -
 #
 # Measure latency for 100, 500, 1000 and 10000 us
 #
-for v in 100 500 1000 2000 3000 4000 5000 10000 20000
+for v in 100 200 300 400 500 1000 2000 3000 4000 5000 10000 20000
 do
 	echo "Testing $v us..."
 	echo $v > $SYSFS_RUNTIME
