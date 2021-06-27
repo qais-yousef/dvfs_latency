@@ -92,7 +92,9 @@ do
 	sleep 1
 	echo 1 > $SYSFS_START
 
-	echo -e "\tperformance gov: $(cat $SYSFS_CYCLES)\t$(cat $SYSFS_COUNTER)"
+	perf_cycles=$(cat $SYSFS_CYCLES)
+	perf_counter=$(cat $SYSFS_COUNTER)
+	echo -e "\tperformance gov: $perf_cycles\t$perf_counter"
 
 	#
 	# Measure latency with schedutil governor
@@ -101,7 +103,13 @@ do
 	sleep 1
 	echo 1 > $SYSFS_START
 
-	echo -e "\tschedutil gov:   $(cat $SYSFS_CYCLES)\t$(cat $SYSFS_COUNTER)"
+	sched_cycles=$(cat $SYSFS_CYCLES)
+	sched_counter=$(cat $SYSFS_COUNTER)
+	echo -e "\tschedutil gov:   $sched_cycles\t$sched_counter"
+
+	cycles_ratio=$(echo "scale=4; $perf_cycles/$sched_cycles" | bc)
+	counter_ratio=$(echo "scale=4; $perf_counter/$sched_counter" | bc)
+	echo -e "\tratio:           $cycles_ratio    \t$counter_ratio"
 done
 
 echo "Done!"
