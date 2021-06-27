@@ -78,6 +78,16 @@ echo 0 > $POLICY/schedutil/rate_limit_us
 echo "New schedutil rate limit: $(cat $POLICY/schedutil/rate_limit_us) us"
 
 #
+# Calculate the ratio of min/max frequencies
+#
+min_freq=$(cat $POLICY/cpuinfo_min_freq)
+max_freq=$(cat $POLICY/cpuinfo_max_freq)
+ratio_min_max=$(echo "scale=4; $min_freq/$max_freq" | bc)
+ratio_max_min=$(echo "scale=4; $max_freq/$min_freq" | bc)
+echo "Ratio of min_freq/max_freq: $ratio_min_max"
+echo "Ratio of max_freq/min_freq: $ratio_max_min"
+
+#
 # Measure latency for 100, 500, 1000 and 10000 us
 #
 for v in 100 200 300 400 500 1000 2000 3000 4000 5000 10000 20000
