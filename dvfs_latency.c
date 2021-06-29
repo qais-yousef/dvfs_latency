@@ -22,6 +22,7 @@ static int cpu;
 static int start;
 static s64 period = 20 * USEC_PER_MSEC;
 static s64 runtime = 500;
+static s64 actual_runtime;
 static s64 duration = 1 * USEC_PER_SEC;
 static u64 cycles;
 static u64 counter;
@@ -103,9 +104,12 @@ static int dvfs_latency_thread(void *data)
 		if (delta < runtime)
 			continue;
 
+		actual_runtime = delta;
 		usleep_range(sleeptime, sleeptime);
 		t1 = ktime_get();
 	}
+
+	dvfs_info("Actual runtime: %lld", actual_runtime);
 
 	cleanup_perf_event();
 
