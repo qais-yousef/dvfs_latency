@@ -118,7 +118,7 @@ do
 	echo -e "\tschedutil gov:   $sched_cycles\t$sched_counter"
 
 	cycles_ratio=$(echo "scale=4; $perf_cycles/$sched_cycles" | bc)
-	counter_ratio=$(echo "scale=4; $perf_counter/$sched_counter" | bc)
+	counter_ratio=$(echo "scale=4; $sched_counter/$perf_counter" | bc)
 	echo -e "\tratio:           $cycles_ratio    \t$counter_ratio"
 done
 
