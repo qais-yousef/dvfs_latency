@@ -110,6 +110,7 @@ do
 	# Measure latency with schedutil governor
 	#
 	echo schedutil > $POLICY/scaling_governor
+	echo 0 > $POLICY/schedutil/rate_limit_us
 	sleep 1
 	echo 1 > $SYSFS_START
 
