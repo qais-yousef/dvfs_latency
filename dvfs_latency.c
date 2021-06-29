@@ -33,10 +33,19 @@ static struct kobject *dvfs_latency_kobj;
 #define dvfs_err(args...)	pr_err("dvfs_lateny: " args)
 
 
+static void cycles_overflow(struct perf_event *event,
+			    struct perf_sample_data *data,
+			    struct pt_regs *regs)
+{
+	cycles += sizeof(unsigned int);
+}
+
 static int setup_perf_event(void)
 {
 	cycle_counter = perf_event_create_kernel_counter(&cycle_counter_attr,
-							 cpu, NULL, NULL, NULL);
+							 cpu, NULL,
+							 cycles_overflow,
+							 NULL);
 	if (IS_ERR(cycle_counter)) {
 		dvfs_err("Failed to allocate perf counter\n");
 		return PTR_ERR(cycle_counter);
