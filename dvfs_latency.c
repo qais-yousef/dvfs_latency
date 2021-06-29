@@ -49,17 +49,22 @@ static int setup_perf_event(void)
 
 	perf_event_enable(cycle_counter);
 
+	cycles = 0;
+
 	return 0;
 }
 
 static void cleanup_perf_event(void)
 {
-	u64 enabled, running;
-	cycles = perf_event_read_value(cycle_counter, &enabled, &running);
-
 	dvfs_info("Stopped. CPU%d cycle counter = %llu\n", cpu, cycles);
 	perf_event_disable(cycle_counter);
 	perf_event_release_kernel(cycle_counter);
+}
+
+static void read_perf_event(void)
+{
+	u64 enabled, running;
+	cycles += perf_event_read_value(cycle_counter, &enabled, &running);
 }
 
 static int dvfs_latency_thread(void *data)
@@ -77,6 +82,7 @@ static int dvfs_latency_thread(void *data)
 	begin = t1 = ktime_get();
 	while (true) {
 		counter++;
+		read_perf_event();
 
 		t2 = ktime_get();
 
