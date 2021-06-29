@@ -110,7 +110,18 @@ static int dvfs_latency_start(void)
 		return PTR_ERR(thread);
 	}
 
+#if 1
 	sched_set_fifo(thread);
+#else
+	{
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wincompatible-pointer-types"
+		#include <linux/sched/types.h>
+		const struct sched_param sp = { .sched_priority = MAX_RT_PRIO / 2 };
+		sched_setscheduler_nocheck(thread, SCHED_FIFO, &sp);
+		#pragma clang diagnostic pop
+	}
+#endif
 
 	kthread_bind(thread, cpu);
 	kthread_park(thread);
