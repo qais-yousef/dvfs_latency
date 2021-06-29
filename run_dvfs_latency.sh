@@ -38,11 +38,11 @@ for cpu in $(cat $POLICY/affected_cpus)
 do
 	if [ -e $cpus ]; then
 		cpus=$cpu
-		echo $cpu > $SYSFS_CPU
 	else
 		cpus="$cpus,$cpu"
 	fi
 done
+echo $cpu > $SYSFS_CPU
 echo "Affected cpus: $cpus"
 echo "Testing cpu: $(cat $SYSFS_CPU)"
 
