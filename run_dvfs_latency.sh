@@ -118,7 +118,7 @@ do
 	sched_counter=$(cat $SYSFS_COUNTER)
 	printf "\tschedutil gov:   $sched_cycles\t$sched_counter\n"
 
-	cycles_ratio=$(echo "scale=4; $perf_cycles/$sched_cycles" | bc)
+	cycles_ratio=$(echo "scale=4; $sched_cycles/$perf_cycles" | bc)
 	counter_ratio=$(echo "scale=4; $sched_counter/$perf_counter" | bc)
 	printf "\tratio:           $cycles_ratio    \t$counter_ratio\n"
 done
