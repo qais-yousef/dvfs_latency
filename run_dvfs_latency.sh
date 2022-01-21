@@ -25,9 +25,9 @@ fi
 #
 # Detect which policy to act on
 #
-for p in $(ls $SYSFS_CPUFREQ)
+for p in $(find $SYSFS_CPUFREQ -name 'policy*' | sort)
 do
-	POLICY=$SYSFS_CPUFREQ/$p
+	POLICY=$p
 done
 echo "Tetsing policy: $POLICY"
 
