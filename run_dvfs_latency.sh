@@ -64,9 +64,11 @@ cd $CPUSET_DIR
 mkdir tg
 echo "$cpus" > tg/cpuset.cpus
 echo 1 > tg/cpuset.cpu_exclusive
+echo 0 > tg/cpuset.sched_load_balance
 
 echo "cpuset cpus: $(cat tg/cpuset.cpus)"
 echo "cpuset exclusive: $(cat tg/cpuset.cpu_exclusive)"
+echo "cpuset sched_load_balance: $(cat tg/cpuset.sched_load_balance)"
 cd -
 
 #
