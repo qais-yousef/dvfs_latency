@@ -91,6 +91,17 @@ echo 0 > $SYSFS_RATE_LIMIT
 echo "New schedutil rate limit: $(cat $SYSFS_RATE_LIMIT) us"
 
 #
+# Remember uclamp_min_rt_default then reset it to 1024
+#
+PROCFS_UCLAMP_MIN_RT_DEFAULT=/proc/sys/kernel/sched_util_clamp_min_rt_default
+if [ -e $PROCFS_UCLAMP_MIN_RT_DEFAULT ]; then
+	UCLAMP_MIN_RT_DEFAULT=$(cat $PROCFS_UCLAMP_MIN_RT_DEFAULT)
+	echo "Original uclamp_min_rt_default: $(cat $PROCFS_UCLAMP_MIN_RT_DEFAULT)"
+	echo 1024 > $PROCFS_UCLAMP_MIN_RT_DEFAULT
+	echo "New uclamp_min_rt_default: $(cat $PROCFS_UCLAMP_MIN_RT_DEFAULT)"
+fi
+
+#
 # Calculate the ratio of min/max frequencies
 #
 min_freq=$(cat $POLICY/cpuinfo_min_freq)
@@ -143,6 +154,12 @@ echo "Done!"
 #
 echo $SCHEDUTIL_RLIMIT > $SYSFS_RATE_LIMIT
 echo "Restored schedutil rate limit: $(cat $SYSFS_RATE_LIMIT) us"
+
+if [ -e $PROCFS_UCLAMP_MIN_RT_DEFAULT ]; then
+	echo $UCLAMP_MIN_RT_DEFAULT > $PROCFS_UCLAMP_MIN_RT_DEFAULT
+	echo "Restored uclamp_min_rt_default: $(cat $PROCFS_UCLAMP_MIN_RT_DEFAULT)"
+fi
+
 if [ $REMOVE -eq 1 ]; then
 	rmmod $MODULE
 fi
