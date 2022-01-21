@@ -162,11 +162,12 @@ if [ -e $PROCFS_UCLAMP_MIN_RT_DEFAULT ]; then
 	echo "Restored uclamp_min_rt_default: $(cat $PROCFS_UCLAMP_MIN_RT_DEFAULT)"
 fi
 
+rmdir $CPUSET_DIR/tg
+
 if [ $REMOVE -eq 1 ]; then
 	rmmod $MODULE
 fi
 if [ $UNMOUNT_CPUSET -eq 1 ]; then
 	umount $CPUSET_DIR
-	rmdir $CPUSET_DIR/tg
 	rmdir $CPUSET_DIR
 fi
