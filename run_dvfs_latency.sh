@@ -135,6 +135,6 @@ if [ $REMOVE -eq 1 ]; then
 fi
 if [ $UNMOUNT_CPUSET -eq 1 ]; then
 	umount $CPUSET_DIR
-	rm -rf $CPUSET_DIR/tg
-	rm -rf $CPUSET_DIR
+	rmdir $CPUSET_DIR/tg
+	rmdir $CPUSET_DIR
 fi
