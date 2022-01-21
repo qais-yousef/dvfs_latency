@@ -70,12 +70,25 @@ echo "cpuset exclusive: $(cat tg/cpuset.cpu_exclusive)"
 cd -
 
 #
+# Find out where rate_limit_us is
+#
+SYSFS_RATE_LIMIT=$POLICY/schedutil/rate_limit_us
+if [ ! -e $SYSFS_RATE_LIMIT ]; then
+	SYSFS_RATE_LIMIT=$SYSFS_CPUFREQ/schedutil/rate_limit_us
+
+	if [ ! -e $SYSFS_RATE_LIMIT ]; then
+		echo "ERROR: Can't find schedutil/rate_limit_us!"
+		exit 1
+	fi
+fi
+
+#
 # Remember schedutil rate limit then reset it
 #
-SCHEDUTIL_RLIMIT=$(cat $POLICY/schedutil/rate_limit_us)
-echo "Original schedutil rate limit: $(cat $POLICY/schedutil/rate_limit_us) us"
-echo 0 > $POLICY/schedutil/rate_limit_us
-echo "New schedutil rate limit: $(cat $POLICY/schedutil/rate_limit_us) us"
+SCHEDUTIL_RLIMIT=$(cat $SYSFS_RATE_LIMIT)
+echo "Original schedutil rate limit: $(cat $SYSFS_RATE_LIMIT) us"
+echo 0 > $SYSFS_RATE_LIMIT
+echo "New schedutil rate limit: $(cat $SYSFS_RATE_LIMIT) us"
 
 #
 # Calculate the ratio of min/max frequencies
@@ -110,7 +123,7 @@ do
 	# Measure latency with schedutil governor
 	#
 	echo schedutil > $POLICY/scaling_governor
-	echo 0 > $POLICY/schedutil/rate_limit_us
+	echo 0 > $SYSFS_RATE_LIMIT
 	sleep 1
 	echo 1 > $SYSFS_START
 
@@ -128,8 +141,8 @@ echo "Done!"
 #
 # Cleanup
 #
-echo $SCHEDUTIL_RLIMIT > $POLICY/schedutil/rate_limit_us
-echo "Restored schedutil rate limit: $(cat $POLICY/schedutil/rate_limit_us) us"
+echo $SCHEDUTIL_RLIMIT > $SYSFS_RATE_LIMIT
+echo "Restored schedutil rate limit: $(cat $SYSFS_RATE_LIMIT) us"
 if [ $REMOVE -eq 1 ]; then
 	rmmod $MODULE
 fi
