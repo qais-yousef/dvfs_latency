@@ -113,6 +113,8 @@ ratio_max_min=$(echo "scale=4; $max_freq/$min_freq" | bc)
 echo "Ratio of min_freq/max_freq: $ratio_min_max"
 echo "Ratio of max_freq/min_freq: $ratio_max_min"
 
+sleep 1
+
 #
 # Measure latency for 100, 500, 1000 and 10000 us
 #
