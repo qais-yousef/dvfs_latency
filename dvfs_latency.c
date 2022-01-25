@@ -44,7 +44,7 @@ static void cycles_overflow(struct perf_event *event,
 static int setup_perf_event(void)
 {
 	cycle_counter = perf_event_create_kernel_counter(&cycle_counter_attr,
-							 cpu, NULL,
+							 cpu, thread,
 							 cycles_overflow,
 							 NULL);
 	if (IS_ERR(cycle_counter)) {
