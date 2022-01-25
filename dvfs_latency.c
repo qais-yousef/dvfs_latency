@@ -13,7 +13,7 @@ static struct perf_event_attr cycle_counter_attr = {
 	.size		= sizeof(struct perf_event_attr),
 	.pinned		= 1,
 	.disabled	= 1,
-	.sample_period	= sizeof(unsigned int),
+	/* .sample_period	= sizeof(unsigned int), */
 };
 
 static struct perf_event *cycle_counter;
