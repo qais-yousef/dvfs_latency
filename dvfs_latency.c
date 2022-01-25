@@ -3,6 +3,7 @@
 #include <linux/kobject.h>
 #include <linux/kthread.h>
 #include <linux/module.h>
+#include <linux/mutex.h>
 #include <linux/perf_event.h>
 #include <linux/sched.h>
 
@@ -19,7 +20,6 @@ static struct perf_event_attr cycle_counter_attr = {
 static struct perf_event *cycle_counter;
 
 static int cpu;
-static int start;
 static s64 period = 20 * USEC_PER_MSEC;
 static s64 runtime = 500;
 static s64 actual_runtime;
@@ -29,6 +29,8 @@ static u64 counter;
 
 static struct task_struct *thread;
 static struct kobject *dvfs_latency_kobj;
+
+static DEFINE_MUTEX(start_mutex);
 
 #define dvfs_info(args...)	pr_info("dvfs_lateny: " args)
 #define dvfs_err(args...)	pr_err("dvfs_lateny: " args)
@@ -113,7 +115,7 @@ static int dvfs_latency_thread(void *data)
 
 	cleanup_perf_event();
 
-	start = 0;
+	mutex_unlock(&start_mutex);
 
 	return 0;
 }
@@ -170,15 +172,14 @@ static struct kobj_attribute cpu_attribute = __ATTR_RW(cpu);
 static ssize_t start_show(struct kobject *kobj, struct kobj_attribute *attr,
 			  char *buf)
 {
-	return sprintf(buf, "%d\n", start);
+	return sprintf(buf, "%d\n", mutex_is_locked(&start_mutex));
 }
 static ssize_t start_store(struct kobject *kobj, struct kobj_attribute *attr,
 			   const char *buf, size_t count)
 {
-	if (start)
+	if (!mutex_trylock(&start_mutex))
 		return -EBUSY;
 
-	start = 1;
 	dvfs_latency_start();
 
 	return count;
@@ -212,20 +213,26 @@ static struct kobj_attribute runtime_attribute = __ATTR_RW(runtime);
 static ssize_t cycles_show(struct kobject *kobj, struct kobj_attribute *attr,
 			   char *buf)
 {
-	while (start)
-		msleep(500);
+	ssize_t ret;
 
-	return sprintf(buf, "%llu\n", cycles);
+	mutex_lock(&start_mutex);
+	ret = sprintf(buf, "%llu\n", cycles);
+	mutex_unlock(&start_mutex);
+
+	return ret;
 }
 static struct kobj_attribute cycles_attribute = __ATTR_RO(cycles);
 
 static ssize_t counter_show(struct kobject *kobj, struct kobj_attribute *attr,
 			    char *buf)
 {
-	while (start)
-		msleep(500);
+	ssize_t ret;
 
-	return sprintf(buf, "%llu\n", counter);
+	mutex_lock(&start_mutex);
+	ret = sprintf(buf, "%llu\n", counter);
+	mutex_unlock(&start_mutex);
+
+	return ret;
 }
 static struct kobj_attribute counter_attribute = __ATTR_RO(counter);
 
