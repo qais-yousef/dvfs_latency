@@ -14,7 +14,6 @@ static struct perf_event_attr cycle_counter_attr = {
 	.size		= sizeof(struct perf_event_attr),
 	.pinned		= 1,
 	.disabled	= 1,
-	/* .sample_period	= sizeof(unsigned int), */
 };
 
 static struct perf_event *cycle_counter;
@@ -36,18 +35,11 @@ static DEFINE_MUTEX(start_mutex);
 #define dvfs_err(args...)	pr_err("dvfs_lateny: " args)
 
 
-static void cycles_overflow(struct perf_event *event,
-			    struct perf_sample_data *data,
-			    struct pt_regs *regs)
-{
-	cycles += sizeof(unsigned int);
-}
-
 static int setup_perf_event(void)
 {
 	cycle_counter = perf_event_create_kernel_counter(&cycle_counter_attr,
 							 cpu, thread,
-							 cycles_overflow,
+							 NULL,
 							 NULL);
 	if (IS_ERR(cycle_counter)) {
 		dvfs_err("Failed to allocate perf counter\n");
